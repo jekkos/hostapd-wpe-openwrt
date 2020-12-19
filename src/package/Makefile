@@ -209,8 +209,8 @@ cert_config_files=ca.der ca.key ca.pem dh server.key server.pem
 
 define Install/hostapd-wpe
 	$(INSTALL_DIR) $(1)/usr/sbin
-	$(INSTALL_DIR) $(1)/usr/local/etc/hostapd-wpe
-	$(INSTALL_DIR) $(1)/usr/local/etc/hostapd-wpe/certs
+	$(INSTALL_DIR) $(1)/etc/hostapd-wpe
+	$(INSTALL_DIR) $(1)/etc/hostapd-wpe/certs
 endef
 
 define Package/hostapd-wpe/install
