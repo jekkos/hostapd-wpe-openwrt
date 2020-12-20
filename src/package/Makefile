@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=hostapd-wpe
 PKG_VERSION:=git
-PKG_RELEASE:=1
+PKG_RELEASE:=2
 
 PKG_SOURCE_URL:=http://w1.fi/hostap.git
 PKG_SOURCE_PROTO:=git
@@ -34,11 +34,7 @@ EAPOL_TEST_PROVIDERS:=
 SUPPLICANT_PROVIDERS:=
 HOSTAPD_PROVIDERS:=
 
-LOCAL_TYPE=$(strip \
-		$(if $(findstring wpad,$(BUILD_VARIANT)),wpad, \
-		$(if $(findstring supplicant,$(BUILD_VARIANT)),supplicant, \
-		hostapd \
-		)))
+BUILD_VARIANT=full
 
 LOCAL_AND_LIB_VARIANT=$(patsubst hostapd-%,%,\
 		      $(patsubst wpad-%,%,\
@@ -46,22 +42,11 @@ LOCAL_AND_LIB_VARIANT=$(patsubst hostapd-%,%,\
 		      $(BUILD_VARIANT)\
 		      )))
 
-LOCAL_VARIANT=$(patsubst %-internal,%,\
-	      $(patsubst %-openssl,%,\
-	      $(patsubst %-wolfssl,%,\
-	      $(LOCAL_AND_LIB_VARIANT)\
-	      )))
+LOCAL_TYPE:=wpad
+LOCAL_VARIANT:=full
+SSL_VARIANT:=openssl
 
-SSL_VARIANT=$(strip \
-		$(if $(findstring openssl,$(LOCAL_AND_LIB_VARIANT)),openssl,\
-		$(if $(findstring wolfssl,$(LOCAL_AND_LIB_VARIANT)),wolfssl,\
-		internal\
-		)))
-
-CONFIG_VARIANT:=$(LOCAL_VARIANT)
-ifeq ($(LOCAL_VARIANT),mesh)
-  CONFIG_VARIANT:=full
-endif
+CONFIG_VARIANT:=full
 
 include $(INCLUDE_DIR)/package.mk
 
@@ -82,34 +67,9 @@ DRIVER_MAKEOPTS= \
 	CONFIG_IEEE80211N=$(HOSTAPD_IEEE80211N) \
 	CONFIG_IEEE80211AC=$(HOSTAPD_IEEE80211AC) \
 	CONFIG_DRIVER_WEXT=$(CONFIG_DRIVER_WEXT_SUPPORT) \
-
-ifneq ($(LOCAL_VARIANT),mini)
-  DRIVER_MAKEOPTS += CONFIG_IEEE80211W=$(CONFIG_DRIVER_11W_SUPPORT)
-endif
-
-ifeq ($(LOCAL_VARIANT),full)
-  ifeq ($(SSL_VARIANT),openssl)
-    DRIVER_MAKEOPTS += CONFIG_TLS=openssl CONFIG_SAE=y CONFIG_OWE=y CONFIG_SUITEB192=y CONFIG_AP=y CONFIG_MESH=y
-    TARGET_LDFLAGS += -lcrypto -lssl
-  endif
-  ifeq ($(SSL_VARIANT),wolfssl)
-    DRIVER_MAKEOPTS += CONFIG_TLS=wolfssl CONFIG_WPS_NFC=1 CONFIG_SAE=y CONFIG_OWE=y CONFIG_SUITEB192=y CONFIG_AP=y CONFIG_MESH=y
-    TARGET_LDFLAGS += -lwolfssl
-  endif
-endif
+	CONFIG_AP=y \
 
 ifneq ($(LOCAL_TYPE),hostapd)
-  ifeq ($(LOCAL_VARIANT),mesh)
-    ifeq ($(SSL_VARIANT),openssl)
-      DRIVER_MAKEOPTS += CONFIG_TLS=openssl CONFIG_AP=y CONFIG_SAE=y CONFIG_MESH=y
-      TARGET_LDFLAGS += -lcrypto -lssl
-    endif
-    ifeq ($(SSL_VARIANT),wolfssl)
-      DRIVER_MAKEOPTS += CONFIG_TLS=wolfssl CONFIG_WPS_NFC=1 CONFIG_AP=y CONFIG_SAE=y CONFIG_MESH=y
-      TARGET_LDFLAGS += -lwolfssl
-    endif
-  endif
-
   ifdef CONFIG_WPA_RFKILL_SUPPORT
     DRIVER_MAKEOPTS += NEED_RFKILL=y
   endif
@@ -126,7 +86,7 @@ define Package/hostapd-wpe/Default
   SECTION:=net
   CATEGORY:=Network
   TITLE:=IEEE 802.1x Authenticator with WPE support
-  DEPENDS:=$(DRV_DEPENDS) +hostapd-common +libubus
+  DEPENDS:=$(DRV_DEPENDS) +hostapd-common +libubox +libopenssl
   CONFLICTS:=$(HOSTAPD_PROVIDERS)
   HOSTAPD_PROVIDERS+=$(1)
 endef
@@ -153,9 +113,6 @@ endif
 
 define Build/Configure
 	$(Build/Configure/rebuild)
-	$(if $(wildcard ./files/hostapd-$(LOCAL_VARIANT).config), \
-		$(CP) ./files/hostapd-$(LOCAL_VARIANT).config $(PKG_BUILD_DIR)/hostapd/.config \
-	)
 	$(CP) ./files/wpa_supplicant-$(LOCAL_VARIANT).config $(PKG_BUILD_DIR)/wpa_supplicant/.config
 endef
 
@@ -168,7 +125,7 @@ TARGET_CPPFLAGS := \
 	$(if $(CONFIG_WPA_MSG_MIN_PRIORITY),-DCONFIG_MSG_MIN_PRIORITY=$(CONFIG_WPA_MSG_MIN_PRIORITY))
 
 TARGET_CFLAGS += -ffunction-sections -fdata-sections -flto
-TARGET_LDFLAGS += -Wl,--gc-sections -flto=jobserver -fuse-linker-plugin -lubox -lubus
+TARGET_LDFLAGS += -Wl,--gc-sections -flto=jobserver -fuse-linker-plugin -lubox -lssl -lcrypto
 
 ifdef CONFIG_PACKAGE_kmod-cfg80211
   TARGET_LDFLAGS += -lm -lnl-tiny
@@ -216,8 +173,8 @@ endef
 define Package/hostapd-wpe/install
 	$(call Install/hostapd-wpe,$(1))
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/hostapd/hostapd-wpe $(1)/usr/sbin/
-	$(INSTALL_DATA) $(addprefix $(PKG_BUILD_DIR)/hostapd/,$(config_files)) $(1)/usr/local/etc/hostapd-wpe/
-	$(INSTALL_DATA) $(addprefix $(PKG_BUILD_DIR)/hostapd/certs/,$(cert_config_files)) $(1)/usr/local/etc/hostapd-wpe/certs/
+	$(INSTALL_DATA) $(addprefix $(PKG_BUILD_DIR)/hostapd/,$(config_files)) $(1)/etc/hostapd-wpe/
+	$(INSTALL_DATA) $(addprefix $(PKG_BUILD_DIR)/hostapd/certs/,$(cert_config_files)) $(1)/etc/hostapd-wpe/certs/
 endef
 
 $(eval $(call BuildPackage,hostapd-wpe))
