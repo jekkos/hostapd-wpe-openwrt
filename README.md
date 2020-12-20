@@ -2,7 +2,7 @@
 # hostapd-wpe-openwrt
 Updated: 20/12/2020 
 
-Hostapd-wpe (Wireless Pwnage Edition) packages for OpenWRT 19.07. Some effort was done to make the build as small as possible and to reuse OpenWrt components where possible. The build uses openssl and libubox as only dependencies
+Hostapd-wpe (Wireless Pwnage Edition) packages for OpenWRT 19.07. Some effort was done to make the build as small as possible and reuse OpenWrt components where possible. The build uses openssl and libubox as only dependencies
 
 The WPE patch was taken from the [aircrack-ng repository](https://github.com/aircrack-ng/aircrack-ng/blob/master/patches/wpe/hostapd-wpe/hostapd-wpe.patch) and applied to the hostapd in OpenWrt. This build includes Cupid attack (for HeartBleed), Karma mode and Mschapv2 password fixes.
 
