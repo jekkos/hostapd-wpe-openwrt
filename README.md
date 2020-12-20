@@ -33,7 +33,10 @@ Then compile the package
 * libopenssl1.1_1.1.1i-1_mips_24kc.ipk (you probably already have this installed)
 
 ## Download and install .ipk directly
-The package is here precompiled for mips24kc. It only has openssl as a dependency.
+The package is here precompiled for mips24kc. It only has openssl as a dependency. Download the .ipk files in the download section here, copy to `/tmp` and then install as follows
+
+`opkg install /tmp/hostapd-common_2019-08-08-ca8c2bd2-4_mips_24kc.ipk`
+`opkg install /tmp/hostapd-wpe_git-2_mips_24kc.ipk`
 
 ## Run on OpenWrt
 `hostapd-wpe -i wlan1 -k /etc/hostapd-wpe/hostapd-wpe.conf` to start the process. A config file can be found in `/etc/hostapd-wpe/hostapd-wpe.conf`
