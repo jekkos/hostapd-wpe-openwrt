@@ -17,8 +17,10 @@ Next edit `feeds.conf.default` in OpenWrt root folder and add following line to 
 
 in OpenWrt folder update the feeds and install them
 
-`./scripts/feeds update -a`
-`./scripts/feeds install -a`
+```
+./scripts/feeds update -a
+./scripts/feeds install -a
+```
 
 Then compile the package
 
@@ -34,8 +36,10 @@ Then compile the package
 ## Download and install .ipk directly for mips
 The package is here precompiled for mips24kc (tplink wr703n). It only has openssl as a dependency. Download the .ipk files in the download section here, copy to `/tmp` and then install as follows
 
-`opkg install /tmp/hostapd-common_2019-08-08-ca8c2bd2-4_mips_24kc.ipk`
-`opkg install /tmp/hostapd-wpe_git-2_mips_24kc.ipk`
+```
+opkg install /tmp/hostapd-common_2019-08-08-ca8c2bd2-4_mips_24kc.ipk
+opkg install /tmp/hostapd-wpe_git-2_mips_24kc.ipk
+```
 
 ## Run on OpenWrt
 Install coreutils-nohup to keep the process up after you detach SSH
