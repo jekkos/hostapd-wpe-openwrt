@@ -7,7 +7,6 @@ Hostapd-wpe (Wireless Pwnage Edition) packages for OpenWRT 19.07. Some effort wa
 The WPE patch was taken from the [aircrack-ng repository](https://github.com/aircrack-ng/aircrack-ng/blob/master/patches/wpe/hostapd-wpe/hostapd-wpe.patch) and applied to the hostapd in OpenWrt. This build includes Cupid attack (for HeartBleed), Karma mode and Mschapv2 password fixes.
 
 ## Build this package for your architecture
-
 Clone this repository.
 
 `git clone https://github.com/jekkos/hostapd-wpe-openwrt`
@@ -25,7 +24,7 @@ Then compile the package
 
 `make package/network/services/hostapd-wpe/compile V=s`
 
-.ipk files can be fonud in `bin/packages/<arch>/base/` (in this case arch=mips)
+.ipk files can be found in `bin/packages/<arch>/base/` (in this case arch=mips)
 
 * hostapd-wpe_git-2_mips_24kc.ipk
 * hostapd-common_2019-08-08-ca8c2bd2-4_mips_24kc.ipk
@@ -39,4 +38,9 @@ The package is here precompiled for mips24kc (tplink wr703n). It only has openss
 `opkg install /tmp/hostapd-wpe_git-2_mips_24kc.ipk`
 
 ## Run on OpenWrt
-`hostapd-wpe -i wlan1 -k /etc/hostapd-wpe/hostapd-wpe.conf` to start the process. A config file can be found in `/etc/hostapd-wpe/hostapd-wpe.conf`
+Install coreutils-nohup to keep the process up after you detach SSH
+
+`opkg update && opkg install coreutils-nohup`
+`nohup hostapd-wpe -i wlan1 -k -s /etc/hostapd-wpe/hostapd-wpe.conf &` to start the process. A config file can be found in `/etc/hostapd-wpe/hostapd-wpe.conf`
+
+The process will write it's logging to `~/hostapd-wpe.log` after you send it a `SIGTERM` signal.
